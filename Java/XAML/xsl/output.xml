@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Canvas.Background>
+   <LinearGradientBrush>
+      <GradientStop Color="White" Offset="0"/>
+      <GradientStop Color="Black" Offset="1"/>
+   </LinearGradientBrush>
+</Canvas.Background>
+<Border BorderThickness="1.5"/>
+<Border BorderBrush="White">
+   <TextBlock Foreground="White">Button</TextBlock>
+</Border>
