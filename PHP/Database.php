@@ -1,30 +1,33 @@
 <?php
 
-
 /**
  * \brief This class manages direct Database operations 
  * \details Classes which inherit this class will have database functionality available
  * \author Vincent De Coen
  * 
  */
-
 abstract class Database {
-    /** 
+
+    /**
      * This is the host the database will connect to
      */
     private $host = "127.0.0.1";
-     /** 
-      * This is the database that the application will use
+
+    /**
+     * This is the database that the application will use
      */
-    private $dbname = "mediaconn";
-    /** 
+    private $dbname = "plantenbib";
+
+    /**
      * This is the username of the database
-    */
+     */
     private $user = "root";
-    /** 
+
+    /**
      * This is the password of the database
      */
     private $pass = "";
+
     /**
      * This is the connection which will be used in any location in spacetime.
      */
@@ -35,16 +38,15 @@ abstract class Database {
         if (!$this->connection) {
             print("connection has failed... please try again");
             return;
-        }else{
+        } else {
             return $this->connection;
         }
     }
-    
+
     public function __destruct() {
         $this->connection = null;
     }
-    
-    
+
     /**
      *   Create a connection to the Application database
      */
@@ -57,66 +59,108 @@ abstract class Database {
             return false;
         }
     }
-    
+
     /**
      *   Prepares the MySQL syntax based on an array containing the items to insert and the tablename
      */
-    private function prepare_insert_query($table_name, $columns){
+    private function prepare_insert_query($table_name, $columns) {
         $query = "insert into " . $table_name . " (";
-        $query = $query . implode(', ', $columns) .  
-                ") values(:" . 
+        $query = $query . implode(', ', $columns) .
+                ") values(:" .
                 implode(', :', $columns)
-                ;
-        
+        ;
+
         $query = $query . ");";
 
         return $query;
     }
-    
+
     /**
      * Executes a insert statement on the Application database, using the prepare_insert_query(); statement
      * \param $table_name The name of the table to insert the data in
      * \param $items An array of items for the database
      * 
      */
-    public function insert($table_name, $items){
-        if(count($items) <= 0 || !is_array($items)){
+    public function insert($table_name, $items) {
+        if (count($items) <= 0 || !is_array($items)) {
             return false;
         }
-    
+
         $columns = array_keys($items);
-        
+
         $sql = $this->prepare_insert_query($table_name, $columns);
         $statement = $this->connection->prepare($sql);
-       
-        for($i = 0; $i < count($items); $i++){
+
+        for ($i = 0; $i < count($items); $i++) {
             $statement->bindParam($columns[$i], $items[$columns[$i]]);
         }
-        
-        if($statement->execute()){
+
+        if ($statement->execute()) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    private function prepare_delete_query($table_name){
+
+    private function prepare_delete_query($table_name) {
         return "delete from $table_name where id = :id";
     }
-    public function delete($table_name, $id){
+
+    public function delete($table_name, $id) {
         $sql = $this->prepare_delete_query($table_name);
         $statement = $this->connection->prepare($sql);
-        
+
         $statement->bindParam("id", $id);
-        if($statement->execute()){
+        if ($statement->execute()) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    
+
+    public function select($table_name) {
+        $sql = "select * from " . $table_name;
+
+        $statement = $this->connection->prepare($sql);
+
+        if ($statement->execute()) {
+            $output = $statement->fetchAll(PDO::FETCH_OBJ);
+            return $output;
+        } else {
+            return false;
+        }
+    }
+
+    public function where($table_name, $where) {
+        $sql = "select * from " . $table_name . " where " . $where;
+
+        $statement = $this->connection->prepare($sql);
+
+        if ($statement->execute()) {
+            $output = $statement->fetchAll(PDO::FETCH_OBJ);
+            return $output;
+        } else {
+            return false;
+        }
+    }
+
+    public function query($query) {
+        $statement = $this->connection->prepare($query);
+
+        if ($statement->execute()) {
+            if(strpos($query, "select") !== false) {
+                $output = $statement->fetchAll(PDO::FETCH_OBJ);
+                return $output;
+            }else{
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
     /**
      * \brief this function will one day generate a database
      */
     //abstract function create_table();
-
 }
